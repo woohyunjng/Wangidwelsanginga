@@ -164,3 +164,8 @@ cython_debug/
 .vscode/
 test/
 test.*
+image/
+
+
+crawler.py
+data/
