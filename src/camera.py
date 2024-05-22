@@ -12,49 +12,37 @@ if fase_cascade.empty():
     exit()
 
 BASE_PATH = "src/image"
-RESIZE = (640, 640)
+RESIZE = (720, 540)
 
-file_path = input("판별할 사진: ")
-file_type = file_path.split(".")[1]
-file_name = file_path.split(".")[0]
-img = cv2.imread(f"{BASE_PATH}/test/{file_path}")
-
-if img is None or img.size == 0:
-    print("파일이 존재하지 않습니다")
-    exit()
-
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 scale_factor = 1.3
-faces = fase_cascade.detectMultiScale(gray, scale_factor, 5)
-
-if not len(faces):
-    print("얼굴이 감지되지 않았습니다")
-    exit()
-
 res = None
 
-for x, y, w, h in faces:
-    show_img = img.copy()
-    cv2.rectangle(show_img, (x, y, w, h), (255, 0, 0), 5)
+capture = cv2.VideoCapture(0)
+while capture.isOpened():
+    key = cv2.waitKey(1)
+    if chr(key & 0xFF) == "q":
+        exit()
 
+    if chr(key & 0xFF) == "o":
+        break
+
+    ret, img = capture.read()
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = fase_cascade.detectMultiScale(gray, scale_factor, 5)
+
+    if len(faces):
+        x, y, w, h = faces[0]
+        cv2.rectangle(img, (x, y, w, h), (255, 0, 0), 5)
+        res = (x, y, w, h)
     if RESIZE is not None:
-        show_img = cv2.resize(show_img, dsize=RESIZE, interpolation=cv2.INTER_AREA)
-    cv2.imshow("Image view", show_img)
-
-    print("얼굴이 잘 감지됐나요? (Yes -> O / No -> 아무거나 클릭)")
-    check = cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    if chr(check & 0xFF) != "O":
-        continue
-    res = (x, y, w, h)
-    break
+        img = cv2.resize(img, dsize=RESIZE, interpolation=cv2.INTER_AREA)
+    cv2.imshow("Camera", img)
 
 if not res:
     print("얼굴이 감지되지 않았습니다")
     exit()
 
-cropped = img[y : y + h, x : x + w]
+cropped = img
 cropped = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
 print("가장 비슷한 대통령의 얼굴을 찾는중...")
 
